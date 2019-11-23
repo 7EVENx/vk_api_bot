@@ -1,0 +1,54 @@
+# Функция сообщения
+def write_msg(user_id, message):
+    vk_session.method('messages.send', {'user_id': user_id, 'message': message, 'random_id': random.randint(1, 1212124564)})
+
+# Перевод чисел СС
+
+def get_num():
+    for event in longpoll.listen():
+        if event.type == VkBotEventType.MESSAGE_NEW:
+            global num
+            num = event.text
+            return (num)
+def get_from_ss():
+    for event in longpoll.listen():
+        if event.type == VkBotEventType.MESSAGE_NEW:
+            global from_ss
+            from_ss = event.text
+            return (from_ss)
+def get_to_ss():
+    for event in longpoll.listen():
+        if event.type == VkBotEventType.MESSAGE_NEW:
+            global to_ss
+            to_ss = event.text
+            return (to_ss)
+def convert_base(num, to_ss=10, from_ss=10):
+    # first convert to decimal number
+    if isinstance(num, str):
+        n = int(num, from_ss)
+    else:
+        n = int(num)
+    # now convert decimal to 'to_base' base
+    list = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    if n < to_ss:
+        return list[n]
+    else:
+        return convert_base(n // to_ss, to_ss) + list[n % to_ss]
+
+
+for event in longpoll.listen():
+    if event.type == VkBotEventType.MESSAGE_NEW:
+        command = event.obj.message['peer_id']
+        if command == 'Начать' or command == 'Перевести СС':
+            while True:
+                try:
+                    write_msg(event.user_id, 'Введи число, которое нужно перевести')
+                    num = get_num()
+                    write_msg(event.user_id, 'Из какой СС')
+                    from_ss = int(get_from_ss())
+                    write_msg(event.user_id, 'В какую СС')
+                    to_ss = int(get_to_ss())
+                    result = convert_base(num, to_ss, from_ss)
+                    write_msg(event.user_id, result)
+                except ValueError:
+                    write_msg(event.user_id, '&#128527;')
